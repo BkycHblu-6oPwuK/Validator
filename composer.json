@@ -1,0 +1,17 @@
+{
+    "name": "alex/validator",
+    "description": "A validation library for arrays with various value types.",
+    "keywords": ["validation", "arrays", "php"],
+    "autoload": {
+        "psr-4": {
+            "Validator\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Alexandr.Belotsitsko",
+            "email": "sanyabelyy020@gmail.com"
+        }
+    ],
+    "require": {}
+}
