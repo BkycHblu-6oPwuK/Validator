@@ -1,7 +1,7 @@
 <?php
 namespace Validator\Rules;
 
-class StringRule extends BaseRule
+class StringRule extends Rule
 {
     public function validate($value) : bool
     {

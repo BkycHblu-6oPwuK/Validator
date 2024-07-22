@@ -1,7 +1,7 @@
 <?php
 namespace Validator;
 
-use Validator\Rules\BaseRule;
+use Validator\Rules\Rule;
 
 class RegistryRules
 {
@@ -12,7 +12,7 @@ class RegistryRules
         return $this->instances[$key];
     }
 
-    public function set($key, BaseRule $rule)
+    public function set($key, Rule $rule)
     {
         if(!$this->has($key)){
             $this->instances[$key] = $rule;

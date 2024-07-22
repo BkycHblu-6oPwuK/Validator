@@ -1,7 +1,7 @@
 <?php
 namespace Validator\Rules;
 
-class IntegerRule extends BaseRule
+class IntegerRule extends Rule
 {
     public function validate($value) : bool
     {

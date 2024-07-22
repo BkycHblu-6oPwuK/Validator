@@ -2,7 +2,9 @@
 
 namespace Validator;
 
-class RulesBuilder
+use Validator\Rules\Rule;
+
+class RegistryUserRules
 {
     private $ruleNames = [
         'array' => true,
@@ -18,15 +20,19 @@ class RulesBuilder
         'required' => true,
         'string' => true,
     ];
-    /** @var RuleDTO[] $rules */
+
     private $rules = [];
 
-    public function addRule(RuleDTO $rule)
+    /**
+     * @param string $ruleClass Rule class
+     */
+    public function addRule(string $ruleClass)
     {
-        $name = $rule->getName();
+        if(!is_subclass_of($ruleClass, Rule::class)) throw new \Exception("$ruleClass must be a descendant of the \Validator\Rules\Rule class");
+        $name = $ruleClass::getRuleName();
         if(isset($this->ruleNames[$name])) throw new \Exception("A rule with this name ($name) already exists");
         $this->ruleNames[$name] = true;
-        $this->rules[] = $rule;
+        $this->rules[$name] = $ruleClass;
         return $this;
     }
 

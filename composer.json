@@ -1,17 +1,30 @@
 {
-    "name": "alex/validator",
+    "name": "beeralex/validator",
     "description": "A validation library for arrays with various value types.",
     "keywords": ["validation", "arrays", "php"],
+    "type": "library",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "Validator\\": "src/"
         }
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/BkycHblu-6oPwuK/Validator"
+        }
+    ],
     "authors": [
         {
-            "name": "Alexandr.Belotsitsko",
+            "name": "Alexandr Belotsitsko",
             "email": "sanyabelyy020@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "php": ">=8.0"
+    },
+    "version": "1.0.0",
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

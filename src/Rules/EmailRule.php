@@ -1,7 +1,7 @@
 <?php
 namespace Validator\Rules;
 
-class EmailRule extends BaseRule
+class EmailRule extends Rule
 {
     public function validate($value) : bool
     {

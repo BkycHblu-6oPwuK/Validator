@@ -1,7 +1,7 @@
 <?php
 namespace Validator\Rules;
 
-class InRule extends BaseRule
+class InRule extends Rule
 {
     private $value;
 

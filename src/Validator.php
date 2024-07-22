@@ -2,23 +2,23 @@
 
 namespace Validator;
 
-use Validator\Rules\BaseRule;
+use Validator\Rules\Rule;
 
-abstract class BaseValidator {
-    protected $data;
-    protected $rules = [];
-    protected $messages = [];
-    protected $validatedData = [];
-    protected $errors = [];
+abstract class Validator {
+    private $data;
+    private $rules = [];
+    private $messages = [];
+    private $validatedData = [];
+    private $errors = [];
     private $registry;
-    private $customRules = [];
+    private $userRules = [];
 
     public final function __construct(array $data) {
         $this->data = $data;
         $this->rules = $this->rules();
         $this->messages = $this->messages();
         $this->registry = new RegistryRules;
-        $this->makeCustomRules();
+        $this->setUserRules();
     }
 
     abstract protected function rules() : array;
@@ -28,18 +28,16 @@ abstract class BaseValidator {
         return [];
     }
 
-    protected function rulesBuilder() : ?RulesBuilder
+    protected function userRules() : ?RegistryUserRules
     {
         return null;
     }
 
-    private function makeCustomRules()
+    private function setUserRules()
     {
-        $builder = $this->rulesBuilder();
-        if($builder){
-            foreach($builder->getRules() as $rule){
-                $this->customRules[$rule->getName()] = $rule->getRule();
-            }
+        $userRules = $this->userRules();
+        if($userRules){
+            $this->userRules = $userRules->getRules();
         }
     }
 
@@ -47,25 +45,49 @@ abstract class BaseValidator {
     {
         foreach ($this->rules as $field => $rule) {
             $fieldRules = $this->parseRules($rule);
-            if (!empty($this->data[$field])) {
-                $value = $this->data[$field];
-                foreach ($fieldRules as $ruleInstance) {
-                    if ($ruleInstance instanceof Rules\NullableRule) continue;
-                    if (!$ruleInstance->validate($value)) $this->addError($field, $ruleInstance);
-                }
-            } else {
-                foreach ($fieldRules as $ruleInstance) {
-                    if ($ruleInstance instanceof Rules\RequiredRule) $this->addError($field, $ruleInstance);
-                    if ($ruleInstance instanceof Rules\NullableRule) $this->unsetError($field);
-                }
-            }
-
-            if (!isset($this->errors[$field])) {
-                $this->validatedData[$field] = $value;
+            $value = $this->data[$field] ?? null;
+    
+            $this->checkRequired($field, $fieldRules, $value);
+            
+            if(!isset($this->errors[$field])){
+                $this->validateField($field, $fieldRules, $value);
+                if(isset($this->errors[$field])) $this->checkNullable($field, $fieldRules, $value);
+                if(!empty($value) && !isset($this->errors[$field])) $this->validatedData[$field] = $value;
             }
         }
 
         return empty($this->errors);
+    }
+    
+    private function checkRequired($field, $fieldRules, $value)
+    {
+        foreach ($fieldRules as $ruleInstance) {
+            if ($ruleInstance instanceof Rules\RequiredRule && !$ruleInstance->validate($value)) {
+                $this->addError($field, $ruleInstance);
+                return;
+            }
+        }
+    }
+    
+    private function checkNullable($field, $fieldRules, $value)
+    {
+        foreach ($fieldRules as $ruleInstance) {
+            if ($ruleInstance instanceof Rules\NullableRule && $ruleInstance->validate($value)) {
+                $this->unsetError($field);
+                return;
+            }
+        }
+    }
+    
+    private function validateField($field, $fieldRules, $value)
+    {
+        foreach ($fieldRules as $ruleInstance) {
+            if ($ruleInstance instanceof Rules\NullableRule) continue;
+            if ($ruleInstance instanceof Rules\RequiredRule) continue;
+            if (!$ruleInstance->validate($value)) {
+                $this->addError($field, $ruleInstance);
+            }
+        }
     }
 
     private function parseRules($rules)
@@ -89,10 +111,10 @@ abstract class BaseValidator {
     }
 
 
-    private function createRuleInstance($ruleName, $param) : ?BaseRule
+    private function createRuleInstance($ruleName, $param) : ?Rule
     {
-        if(isset($this->customRules[$ruleName])){
-            $ruleClass = $this->customRules[$ruleName];
+        if(isset($this->userRules[$ruleName])){
+            $ruleClass = $this->userRules[$ruleName];
         } else {
             $ruleClass = __NAMESPACE__ . '\\Rules\\' . ucfirst($ruleName) . 'Rule';
         }
@@ -107,7 +129,7 @@ abstract class BaseValidator {
         return null;
     }
 
-    private function addError($field, BaseRule $ruleInstance)
+    private function addError($field, Rule $ruleInstance)
     {
         $ruleName = $ruleInstance->getRuleName();
         $message = $this->messages["{$field}.{$ruleName}"] ?? $ruleInstance->getMessage();

@@ -1,7 +1,7 @@
 <?php
 namespace Validator\Rules;
 
-class MaxRule extends BaseRule
+class MaxRule extends Rule
 {
     private $max;
 

@@ -1,7 +1,7 @@
 <?php
 namespace Validator\Rules;
 
-class MinRule extends BaseRule
+class MinRule extends Rule
 {
     private $min;
 
